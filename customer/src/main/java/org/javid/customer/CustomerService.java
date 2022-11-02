@@ -1,13 +1,14 @@
 package org.javid.customer;
 
 import lombok.extern.slf4j.Slf4j;
+import org.javid.clients.fraud.FraudClient;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
-public record CustomerService(CustomerRepository customerRepository,
-                              RestTemplate restTemplate, Properties properties) {
+public record CustomerService(
+        CustomerRepository customerRepository,
+        FraudClient fraudClient) {
 
     public void registerCustomer(CustomerRegistrationRequest request) {
         Customer customer = Customer.builder()
@@ -21,11 +22,7 @@ public record CustomerService(CustomerRepository customerRepository,
 
         customerRepository.saveAndFlush(customer);
         // todo: check if fraudster
-        log.info(properties.getUrls().get("fraud-check"), customer.getId());
-        var fraudCheckResponse = restTemplate.getForObject(
-                properties.getUrls().get("fraud-check"),
-                FraudCheckResponse.class,
-                customer.getId());
+        var fraudCheckResponse = fraudClient.isFraudster(customer.getId());
 
         if (fraudCheckResponse != null && fraudCheckResponse.isFraudster()) {
             throw new IllegalStateException("Fraudster");
