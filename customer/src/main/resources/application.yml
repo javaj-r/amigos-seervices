@@ -21,15 +21,16 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
+    fetch-registry: true
+    register-with-eureka: true
 
-host:
-  local: http://localhost
-ports:
-  fraud: 8081
+# getting application ip and port from eureka by name in capital
+application:
+  fraud: http://FRAUD
 api:
   v1: api/v1
 
 customer:
   properties:
     urls:
-      fraud-check: ${host.local}:${ports.fraud}/${api.v1}/fraud/{customerId}
+      fraud-check: ${application.fraud}/${api.v1}/fraud/{customerId}
