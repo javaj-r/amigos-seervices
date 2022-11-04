@@ -37,6 +37,15 @@ services:
     networks:
       - postgres
 
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - postgres
+
 # first run this in terminal for exact naming
 # docker network create -d bridge postgres
 networks:
