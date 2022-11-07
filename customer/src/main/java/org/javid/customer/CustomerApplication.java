@@ -6,7 +6,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@SpringBootApplication
+@SpringBootApplication(
+        scanBasePackages = {
+                "org.javid.customer",
+                "org.javid.amqp"
+        }
+)
 @EnableEurekaClient
 @EnableConfigurationProperties({Properties.class})
 @EnableFeignClients(basePackages = "org.javid.clients")
