@@ -1,8 +1,8 @@
 package org.javid.customer;
 
 import lombok.extern.slf4j.Slf4j;
+import org.javid.amqp.RabbitMQMessageProducer;
 import org.javid.clients.fraud.FraudClient;
-import org.javid.clients.notification.NotificationClient;
 import org.javid.clients.notification.NotificationRequest;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 public record CustomerService(
         CustomerRepository customerRepository,
         FraudClient fraudClient,
-        NotificationClient notificationClient) {
+        RabbitMQMessageProducer rabbitMQMessageProducer) {
 
     public void registerCustomer(CustomerRegistrationRequest request) {
         Customer customer = Customer.builder()
@@ -32,12 +32,19 @@ public record CustomerService(
         }
 
         // todo: send notification
-        notificationClient.sendNotification(
-                new NotificationRequest(
-                        customer.getId(),
-                        customer.getEmail(),
-                        "Hi %s, welcom to Amigos Project".formatted(customer.getFirstname())
-                )
+        var notificationRequest = new NotificationRequest(
+                customer.getId(),
+                customer.getEmail(),
+                "Hi %s, welcom to Amigos Project".formatted(customer.getFirstname())
         );
+
+        publishNotification(notificationRequest);
+    }
+
+    private void publishNotification(NotificationRequest notificationRequest) {
+        rabbitMQMessageProducer.publish(
+                notificationRequest,
+                "internal-exchange",
+                "internal.notification.routing-key");
     }
 }
